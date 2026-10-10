@@ -3,11 +3,12 @@ package com.farmersmilk.app;
 import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebView;
-import android.webkit.WebSettings;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
-import android.content.Intent;
-import android.net.Uri;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -23,23 +24,28 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         webView.setWebViewClient(new WebViewClient() {
+
             @Override
-            public boolean shouldOverrideUrlLoading(
-                    WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
+            public void onReceivedError(
+                    WebView view,
+                    WebResourceRequest request,
+                    WebResourceError error) {
 
-                if ("https".equals(uri.getScheme())
-                        && uri.getHost() != null
-                        && uri.getHost().equals("wa.me")) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    return true;
+                if (request.isForMainFrame()) {
+                    Toast.makeText(
+                        MainActivity.this,
+                        "Unable to load the app page",
+                        Toast.LENGTH_LONG
+                    ).show();
                 }
-
-                return false;
             }
         });
+
+        webView.setWebChromeClient(new WebChromeClient());
 
         webView.loadUrl("file:///android_asset/index.html");
     }
